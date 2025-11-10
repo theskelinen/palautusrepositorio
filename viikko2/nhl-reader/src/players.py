@@ -12,10 +12,12 @@ def main():
         player = Player(player_dict)
         if player.nationality == nationality:
             players.append(player)
+    
+    sorted_players = sorted(players, key=lambda p: p.points, reverse=True)
 
     print(f"Players from {nationality}:")
 
-    for player in players:
+    for player in sorted_players:
         print(player)
 
 if __name__ == "__main__":
