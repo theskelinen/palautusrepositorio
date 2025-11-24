@@ -19,7 +19,8 @@ class Varasto:
 
     def saldo(self, id):
         tuote = self.hae_tuote(id)
-
+        if tuote is None:
+            return 0
         return self._saldot[tuote]
 
     def ota_varastosta(self, tuote):

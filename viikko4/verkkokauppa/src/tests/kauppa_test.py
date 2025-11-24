@@ -144,3 +144,113 @@ class TestKauppa(unittest.TestCase):
 
         # varmistetaan, että metodia tilisiirto on kutsuttu oikeilla parametreilla
         self.pankki_mock.tilisiirto.assert_called_with("pekka", 42, "12345", ANY, 5)
+
+    def test_aloita_asiointi_nollaa_edellisen_ostoksen_tiedot(self):
+
+        # tehdään toteutus saldo-metodille
+        def varasto_saldo(tuote_id):
+            if tuote_id == 1:
+                return 10
+
+        # tehdään toteutus hae_tuote-metodille
+        def varasto_hae_tuote(tuote_id):
+            if tuote_id == 1:
+                return Tuote(1, "maito", 5)
+
+        # otetaan toteutukset käyttöön
+        self.varasto_mock.saldo.side_effect = varasto_saldo
+        self.varasto_mock.hae_tuote.side_effect = varasto_hae_tuote
+
+        # tehdään ostokset
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.tilimaksu("pekka", "12345")
+
+        # aloitetaan uusi asiointi
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.tilimaksu("pekka", "12345")
+
+        # varmistetaan, että metodia tilisiirto on kutsuttu oikeilla parametreilla
+        self.pankki_mock.tilisiirto.assert_called_with("pekka", 42, "12345", ANY, 5)
+
+    def test_jokaiselle_maksutapahtumalle_pyydetaan_uusi_viitenumero(self):
+
+        # tehdään toteutus saldo-metodille
+        def varasto_saldo(tuote_id):
+            if tuote_id == 1:
+                return 10
+
+        # tehdään toteutus hae_tuote-metodille
+        def varasto_hae_tuote(tuote_id):
+            if tuote_id == 1:
+                return Tuote(1, "maito", 5)
+
+        # otetaan toteutukset käyttöön
+        self.varasto_mock.saldo.side_effect = varasto_saldo
+        self.varasto_mock.hae_tuote.side_effect = varasto_hae_tuote
+
+        # tehdään ostokset
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.tilimaksu("pekka", "12345")
+
+        self.viitegeneraattori_mock.uusi.assert_called_once()
+
+        # tehdään toinen ostos
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.tilimaksu("pekka", "12345")
+
+        self.assertEqual(self.viitegeneraattori_mock.uusi.call_count, 2)
+    
+    def test_poista_korista_palauttaa_oikean_tuotteen_varastoon(self):
+
+        # tehdään toteutus saldo-metodille
+        def varasto_saldo(tuote_id):
+            if tuote_id == 1:
+                return 10
+
+        # tehdään toteutus hae_tuote-metodille
+        def varasto_hae_tuote(tuote_id):
+            if tuote_id == 1:
+                return Tuote(1, "maito", 5)
+
+        # otetaan toteutukset käyttöön
+        self.varasto_mock.saldo.side_effect = varasto_saldo
+        self.varasto_mock.hae_tuote.side_effect = varasto_hae_tuote
+
+        # tehdään ostokset
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.poista_korista(1)
+
+        # varmistetaan, että tuotteen palautus varastoon on kutsuttu oikealla tuotteella
+        tuote = Tuote(1, "maito", 5)
+        self.varasto_mock.palauta_varastoon.assert_called_with(tuote)
+
+    def test_poista_korista_paivittaa_ostoskoria_oikein(self):
+
+        # tehdään toteutus saldo-metodille
+        def varasto_saldo(tuote_id):
+            if tuote_id == 1:
+                return 10
+
+        # tehdään toteutus hae_tuote-metodille
+        def varasto_hae_tuote(tuote_id):
+            if tuote_id == 1:
+                return Tuote(1, "maito", 5)
+
+        # otetaan toteutukset käyttöön
+        self.varasto_mock.saldo.side_effect = varasto_saldo
+        self.varasto_mock.hae_tuote.side_effect = varasto_hae_tuote
+
+        # tehdään ostokset
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.poista_korista(1)
+        self.kauppa.tilimaksu("pekka", "12345")
+
+        # varmistetaan, että metodia tilisiirto on kutsuttu oikeilla parametreilla
+        self.pankki_mock.tilisiirto.assert_called_with("pekka", 42, "12345", ANY, 5)

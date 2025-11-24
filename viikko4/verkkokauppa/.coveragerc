@@ -1,0 +1,9 @@
+[run]
+omit =
+    src/tests/*
+    tests/*
+
+[report]
+# don't show test files in the report
+exclude_lines =
+    # pragma: no cover
