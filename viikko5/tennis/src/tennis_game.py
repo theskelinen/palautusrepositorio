@@ -44,7 +44,7 @@ class TennisGame:
     def _regular_score(self):
         player1_score = self._score_name(self.player1_score)
         player2_score = self._score_name(self.player2_score)
-        return f"{player1_score}-{player2_score }"
+        return f"{player1_score}-{player2_score}"
 
     def _score_name(self, score_value):
         return self.scores[score_value]
